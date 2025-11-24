@@ -2,7 +2,7 @@ use std::hint::black_box;
 use std::collections::HashMap;
 use polars::prelude::*;
 use petgraph::prelude::*;
-use petgraph::visit::{Bfs, Dfs};
+use petgraph::visit::{Bfs, Dfs, VisitMap};
 use bma_benchmark::benchmark;
 
 fn create_graph(data: Vec<(i64, i64)>) -> Graph<i64, (), Undirected>{
@@ -48,19 +48,55 @@ fn dfs_algo(src_node: NodeIndex, goal_node: NodeIndex, graph: &Graph<i64, (), Un
 }
 
 
+fn bidirectional_search(src_node: NodeIndex, goal_node: NodeIndex, graph: &Graph<i64, (), Undirected>){
+    let mut bfs_start= Bfs::new(&graph, src_node);
+    let mut bfs_end= Bfs::new(&graph, goal_node);
+    println!("=== Bidirectional Search ===");
+    loop {
+        //forward Search
+        if let Some(node)=bfs_start.next(&graph){
+            if bfs_end.discovered.is_visited(&node){
+                println!("intersection point is found node: {:?}", graph[node]);
+                break;
+            }
+            else{
+                break;
+            }
+        }
+        //backword search
+        if let Some(node)=bfs_end.next(&graph){
+            if bfs_start.discovered.is_visited(&node){
+                println!("intersection point is found node: {:?}", graph[node]);
+                break;
+            }
+            else{
+                break;
+            }
+        }
+    }
+}
+
 fn benchmark_algos(data: Vec<(i64, i64)>) { 
     let graph= create_graph(data);
     let src_node: NodeIndex=NodeIndex::new(0);
     let goal_node: NodeIndex=NodeIndex::new(900);
 
+    //bfs
     let graph_copy=graph.clone();
     benchmark!(5,  {
         bfs_algo(src_node, goal_node, &graph_copy);
     });
 
+    //dfs
     let graph_copy=graph.clone();
     benchmark!(5,  {
         dfs_algo(src_node, goal_node, &graph_copy);
+    });
+
+    //bidirectional search
+    let graph_copy=graph.clone();
+    benchmark!(5,  {
+        bidirectional_search(src_node, goal_node, &graph_copy);
     });
 }
 
