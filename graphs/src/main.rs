@@ -1,7 +1,9 @@
+use std::hint::black_box;
 use std::collections::HashMap;
 use polars::prelude::*;
 use petgraph::prelude::*;
-use petgraph::visit::Bfs;
+use petgraph::visit::{Bfs, Dfs};
+use bma_benchmark::benchmark;
 
 fn create_graph(data: Vec<(i64, i64)>) -> Graph<i64, (), Undirected>{
     let mut graph = UnGraph::<i64, ()>::new_undirected();
@@ -20,15 +22,46 @@ fn create_graph(data: Vec<(i64, i64)>) -> Graph<i64, (), Undirected>{
     graph
 }
 
-fn bfs_algo(src_node: NodeIndex, goal_node: NodeIndex, graph: Graph<i64, (), Undirected>){
+fn bfs_algo(src_node: NodeIndex, goal_node: NodeIndex, graph: &Graph<i64, (), Undirected>){
     let mut bfs= Bfs::new(&graph, src_node);
+    println!("=== Breadth First Search Traversal ===");
     while let Some(node)= bfs.next(&graph){
-        println!("Visiting Node {:?}", graph[node]);
+        // println!("Visiting Node {:?}", graph[node]);
         if graph[node]==graph[goal_node]{
             println!("Intened Node Found {:?}", graph[node]);
             break;
         }
     }
+}
+
+
+fn dfs_algo(src_node: NodeIndex, goal_node: NodeIndex, graph: &Graph<i64, (), Undirected>){
+    let mut dfs= Dfs::new(&graph, src_node);
+    println!("=== Depth First Search Traversal ===");
+    while let Some(node)= dfs.next(&graph){
+        // println!("Visiting Node {:?}", graph[node]);
+        if graph[node]==graph[goal_node]{
+            println!("Intened Node Found {:?}", graph[node]);
+            break;
+        }
+    }
+}
+
+
+fn benchmark_algos(data: Vec<(i64, i64)>) { 
+    let graph= create_graph(data);
+    let src_node: NodeIndex=NodeIndex::new(0);
+    let goal_node: NodeIndex=NodeIndex::new(900);
+
+    let graph_copy=graph.clone();
+    benchmark!(5,  {
+        bfs_algo(src_node, goal_node, &graph_copy);
+    });
+
+    let graph_copy=graph.clone();
+    benchmark!(5,  {
+        dfs_algo(src_node, goal_node, &graph_copy);
+    });
 }
 
 fn main() {
@@ -39,10 +72,6 @@ fn main() {
         df.get_columns()[1].i64().unwrap().iter()
         ).map(|(x,y)| (x.unwrap(), y.unwrap()
             )).collect();
-
-    let graph= create_graph(data);
-    let src_node: NodeIndex=NodeIndex::new(0);
-    let goal_node: NodeIndex=NodeIndex::new(900);
-    bfs_algo(src_node, goal_node, graph);
+    benchmark_algos(data);
 
 }

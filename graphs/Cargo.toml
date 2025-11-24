@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+bma-benchmark = "0.0.24"
 petgraph = "0.8.3"
 polars = { version = "0.50", features = ["lazy", "csv", "json", "dtype-full", "parquet"] }
 rayon = "1.11.0"
