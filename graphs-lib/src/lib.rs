@@ -1,5 +1,6 @@
 use std::hint::black_box;
 use std::collections::HashMap;
+use petgraph::csr::DefaultIx;
 use polars::prelude::*;
 use petgraph::{prelude::*, Graph};
 use petgraph::visit::{Bfs, Dfs, VisitMap};
@@ -76,7 +77,7 @@ impl AlgoMethods for Data{
             }
         };
 
-        let data: Vec<_>= df.get_columns()[0].i64().unwrap().iter().zip(
+        let data: Vec<_>= df.sort(vec!["Node to"],Default::default()).unwrap().get_columns()[0].i64().unwrap().iter().zip(
             df.get_columns()[1].i64().unwrap().iter()
             ).map(|(x,y)| (x.unwrap(), y.unwrap()
                 )).collect();
@@ -131,14 +132,13 @@ impl AlgoMethods for Data{
         let mut bfs_start= Bfs::new(&graph, src_node);
         let mut bfs_end= Bfs::new(&graph, goal_node);
         println!("=== Bidirectional Search ===");
-        loop {
+        let mut found=false;
+        while !found{
             //forward Search
             if let Some(node)=bfs_start.next(&graph){
                 if bfs_end.discovered.is_visited(&node){
                     println!("intersection point is found node: {:?}", graph[node]);
-                    break;
-                }
-                else{
+                    found=true;
                     break;
                 }
             }
@@ -146,9 +146,7 @@ impl AlgoMethods for Data{
             if let Some(node)=bfs_end.next(&graph){
                 if bfs_start.discovered.is_visited(&node){
                     println!("intersection point is found node: {:?}", graph[node]);
-                    break;
-                }
-                else{
+                    found=true;
                     break;
                 }
             }
