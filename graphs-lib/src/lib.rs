@@ -1,21 +1,21 @@
 use std::hint::black_box;
 use std::collections::HashMap;
 use polars::prelude::*;
-use petgraph::prelude::*;
+use petgraph::{prelude::*, Graph};
 use petgraph::visit::{Bfs, Dfs, VisitMap};
 use bma_benchmark::benchmark;
 
 trait AlgoMethods{
     fn initialize_graphs() -> Self;
-    fn bfs_algo(self, src_node: NodeIndex, goal_node: NodeIndex);
-    fn dfs_algo(self, src_node: NodeIndex, goal_node: NodeIndex);
-    fn bidirectional_search(self, src_node: NodeIndex, goal_node: NodeIndex);
+    fn bfs_algo(&self, src_node: NodeIndex, goal_node: NodeIndex);
+    fn dfs_algo(&self, src_node: NodeIndex, goal_node: NodeIndex);
+    fn bidirectional_search(&self, src_node: NodeIndex, goal_node: NodeIndex);
     fn benchmark_algos_version2(); 
     fn run_bfs();
     fn run_dfs();
     fn run_bidirectional();
 }
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 struct Data{
     data: Vec<(i64, i64)>,
     graph: Graph<i64, (), Undirected>,
@@ -52,16 +52,19 @@ impl AlgoMethods for Data{
         let src_node: NodeIndex=NodeIndex::new(0);
         let goal_node: NodeIndex=NodeIndex::new(900);
         //bfs
+        let algo=&algo_struct;
         benchmark!(5,  {
-            algo_struct.bfs_algo(src_node, goal_node);
+            algo.bfs_algo(src_node, goal_node);
         });
         //dfs
+        let algo=&algo_struct;
         benchmark!(5,  {
-            algo_struct.dfs_algo(src_node, goal_node);
+            algo.dfs_algo(src_node, goal_node);
         });
         //bidirectional search
+        let algo=&algo_struct;
         benchmark!(5,  {
-            algo_struct.bidirectional_search(src_node, goal_node);
+            algo.bidirectional_search(src_node, goal_node);
         });
     }
 
@@ -91,7 +94,7 @@ impl AlgoMethods for Data{
         }
     }
 
-    fn bfs_algo(self,src_node: NodeIndex, goal_node: NodeIndex){
+    fn bfs_algo(&self,src_node: NodeIndex, goal_node: NodeIndex){
         let graph=&self.graph;
         let mut bfs= Bfs::new(&graph, src_node);
         println!("=== Breadth First Search Traversal ===");
@@ -104,7 +107,7 @@ impl AlgoMethods for Data{
         }
     }
 
-    fn dfs_algo(self, src_node: NodeIndex, goal_node: NodeIndex){
+    fn dfs_algo(&self, src_node: NodeIndex, goal_node: NodeIndex){
         let graph=&self.graph;
         let mut dfs= Dfs::new(&graph, src_node);
         println!("=== Depth First Search Traversal ===");
@@ -118,7 +121,7 @@ impl AlgoMethods for Data{
     }
 
 
-    fn bidirectional_search(self,src_node: NodeIndex, goal_node: NodeIndex){
+    fn bidirectional_search(&self,src_node: NodeIndex, goal_node: NodeIndex){
         let graph=&self.graph;
         let mut bfs_start= Bfs::new(&graph, src_node);
         let mut bfs_end= Bfs::new(&graph, goal_node);
