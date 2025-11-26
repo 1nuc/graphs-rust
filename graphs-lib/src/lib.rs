@@ -77,7 +77,7 @@ impl AlgoMethods for Data{
             }
         };
 
-        let data: Vec<_>= df.sort(vec!["Node to"],Default::default()).unwrap().get_columns()[0].i64().unwrap().iter().zip(
+        let data: Vec<_>= df.sort(vec!["Node to","Node from"],Default::default()).unwrap().get_columns()[0].i64().unwrap().iter().zip(
             df.get_columns()[1].i64().unwrap().iter()
             ).map(|(x,y)| (x.unwrap(), y.unwrap()
                 )).collect();
@@ -139,7 +139,6 @@ impl AlgoMethods for Data{
                 if bfs_end.discovered.is_visited(&node){
                     println!("intersection point is found node: {:?}", graph[node]);
                     found=true;
-                    break;
                 }
             }
             //backword search
@@ -147,8 +146,11 @@ impl AlgoMethods for Data{
                 if bfs_start.discovered.is_visited(&node){
                     println!("intersection point is found node: {:?}", graph[node]);
                     found=true;
-                    break;
                 }
+            }
+            if bfs_start.next(&graph).is_none() && bfs_end.next(&graph).is_none(){
+                println!("There is no path between nodes");
+                break;
             }
         }
     }
