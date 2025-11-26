@@ -1,0 +1,150 @@
+use std::hint::black_box;
+use std::collections::HashMap;
+use polars::prelude::*;
+use petgraph::prelude::*;
+use petgraph::visit::{Bfs, Dfs, VisitMap};
+use bma_benchmark::benchmark;
+
+trait AlgoMethods{
+    fn initialize_graphs() -> Self;
+    fn bfs_algo(self, src_node: NodeIndex, goal_node: NodeIndex);
+    fn dfs_algo(self, src_node: NodeIndex, goal_node: NodeIndex);
+    fn bidirectional_search(self, src_node: NodeIndex, goal_node: NodeIndex);
+    fn benchmark_algos_version2(); 
+    fn run_bfs();
+    fn run_dfs();
+    fn run_bidirectional();
+}
+#[derive(Copy, Clone)]
+struct Data{
+    data: Vec<(i64, i64)>,
+    graph: Graph<i64, (), Undirected>,
+}
+impl AlgoMethods for Data{
+
+
+    fn run_bfs(){
+
+        let algo_struct= Self::initialize_graphs();
+        let src_node: NodeIndex=NodeIndex::new(0);
+        let goal_node: NodeIndex=NodeIndex::new(900);
+        algo_struct.bfs_algo(src_node, goal_node);
+    }
+    fn run_dfs(){
+
+        let algo_struct= Self::initialize_graphs();
+        let src_node: NodeIndex=NodeIndex::new(0);
+        let goal_node: NodeIndex=NodeIndex::new(900);
+        algo_struct.dfs_algo(src_node, goal_node);
+    }
+
+    fn run_bidirectional(){
+
+        let algo_struct= Self::initialize_graphs();
+        let src_node: NodeIndex=NodeIndex::new(0);
+        let goal_node: NodeIndex=NodeIndex::new(900);
+        algo_struct.bidirectional_search(src_node, goal_node);
+
+    }
+    
+    fn benchmark_algos_version2() { 
+        let algo_struct= Self::initialize_graphs();
+        let src_node: NodeIndex=NodeIndex::new(0);
+        let goal_node: NodeIndex=NodeIndex::new(900);
+        //bfs
+        benchmark!(5,  {
+            algo_struct.bfs_algo(src_node, goal_node);
+        });
+        //dfs
+        benchmark!(5,  {
+            algo_struct.dfs_algo(src_node, goal_node);
+        });
+        //bidirectional search
+        benchmark!(5,  {
+            algo_struct.bidirectional_search(src_node, goal_node);
+        });
+    }
+
+    fn initialize_graphs() -> Self{
+        let path= PlPath::new("input/dataset_algo.csv");
+        let df= LazyCsvReader::new(path).finish().unwrap().collect().unwrap();
+        let data: Vec<_>= df.get_columns()[0].i64().unwrap().iter().zip(
+            df.get_columns()[1].i64().unwrap().iter()
+            ).map(|(x,y)| (x.unwrap(), y.unwrap()
+                )).collect();
+        let mut graph_ = UnGraph::<i64, ()>::new_undirected();
+        let mut node_map = HashMap::new();
+
+        //a hashmap having the keys as the values from the datasets with value of the node index of the
+        //petgraph
+        //if the key or original value exists then it will return a reference to it so it can add a
+        //connection with second node
+        //same thing happens for the second tuple index y
+        for (x, y) in data.clone().into_iter() {
+            let nx = *node_map.entry(x).or_insert_with(|| graph_.add_node(x));
+            let ny = *node_map.entry(y).or_insert_with(|| graph_.add_node(y));
+            graph_.add_edge(nx, ny, ());
+        }
+        Data {
+            data: data,
+            graph: graph_,
+        }
+    }
+
+    fn bfs_algo(self,src_node: NodeIndex, goal_node: NodeIndex){
+        let graph=&self.graph;
+        let mut bfs= Bfs::new(&graph, src_node);
+        println!("=== Breadth First Search Traversal ===");
+        while let Some(node)= bfs.next(&graph){
+            // println!("Visiting Node {:?}", graph[node]);
+            if graph[node]==graph[goal_node]{
+                println!("Intened Node Found {:?}", graph[node]);
+                break;
+            }
+        }
+    }
+
+    fn dfs_algo(self, src_node: NodeIndex, goal_node: NodeIndex){
+        let graph=&self.graph;
+        let mut dfs= Dfs::new(&graph, src_node);
+        println!("=== Depth First Search Traversal ===");
+        while let Some(node)= dfs.next(&graph){
+            // println!("Visiting Node {:?}", graph[node]);
+            if graph[node]==graph[goal_node]{
+                println!("Intened Node Found {:?}", graph[node]);
+                break;
+            }
+        }
+    }
+
+
+    fn bidirectional_search(self,src_node: NodeIndex, goal_node: NodeIndex){
+        let graph=&self.graph;
+        let mut bfs_start= Bfs::new(&graph, src_node);
+        let mut bfs_end= Bfs::new(&graph, goal_node);
+        println!("=== Bidirectional Search ===");
+        loop {
+            //forward Search
+            if let Some(node)=bfs_start.next(&graph){
+                if bfs_end.discovered.is_visited(&node){
+                    println!("intersection point is found node: {:?}", graph[node]);
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+            //backword search
+            if let Some(node)=bfs_end.next(&graph){
+                if bfs_start.discovered.is_visited(&node){
+                    println!("intersection point is found node: {:?}", graph[node]);
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+        }
+    }
+}
+

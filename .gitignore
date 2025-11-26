@@ -1,2 +1,2 @@
-graphs/target/*
-graphs/Cargo.*
+graphs-lib/Cargo.*
+graphs-lib/target/*
