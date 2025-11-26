@@ -6,7 +6,7 @@ use petgraph::visit::{Bfs, Dfs, VisitMap};
 use bma_benchmark::benchmark;
 
 pub trait AlgoMethods{
-    fn initialize_graphs() -> Self;
+    fn initialize_graphs(size: Option<usize>) -> Self;
     fn bfs_algo(&self, src_node: NodeIndex, goal_node: NodeIndex);
     fn dfs_algo(&self, src_node: NodeIndex, goal_node: NodeIndex);
     fn bidirectional_search(&self, src_node: NodeIndex, goal_node: NodeIndex);
@@ -24,27 +24,28 @@ impl AlgoMethods for Data{
 
 
     fn run_bfs(&self){
+        let node_count=self.graph.node_count();
         let src_node: NodeIndex=NodeIndex::new(0);
-        let goal_node: NodeIndex=NodeIndex::new(900);
+        let goal_node: NodeIndex=NodeIndex::new(node_count-1);
         self.bfs_algo(src_node, goal_node);
     }
     fn run_dfs(&self){
-
+        let node_count=self.graph.node_count();
         let src_node: NodeIndex=NodeIndex::new(0);
-        let goal_node: NodeIndex=NodeIndex::new(900);
+        let goal_node: NodeIndex=NodeIndex::new(node_count-1);
         self.dfs_algo(src_node, goal_node);
     }
 
     fn run_bidirectional(&self){
-
+        let node_count=self.graph.node_count();
         let src_node: NodeIndex=NodeIndex::new(0);
-        let goal_node: NodeIndex=NodeIndex::new(900);
+        let goal_node: NodeIndex=NodeIndex::new(node_count-1);
         self.bidirectional_search(src_node, goal_node);
 
     }
     
     fn benchmark_algos_version2() { 
-        let algo_struct= Self::initialize_graphs();
+        let algo_struct= Self::initialize_graphs(None);
         let src_node: NodeIndex=NodeIndex::new(0);
         let goal_node: NodeIndex=NodeIndex::new(900);
         //bfs
@@ -64,9 +65,17 @@ impl AlgoMethods for Data{
         });
     }
 
-    fn initialize_graphs() -> Self{
+    fn initialize_graphs(size: Option<usize>) -> Self{
         let path= PlPath::new("input/dataset_algo.csv");
-        let df= LazyCsvReader::new(path).finish().unwrap().collect().unwrap();
+        let df: DataFrame=match size{
+            Some(val) =>{
+                LazyCsvReader::new(path).finish().unwrap().collect().unwrap().head(Some(val))
+            },
+            None => {
+                LazyCsvReader::new(path).finish().unwrap().collect().unwrap()
+            }
+        };
+
         let data: Vec<_>= df.get_columns()[0].i64().unwrap().iter().zip(
             df.get_columns()[1].i64().unwrap().iter()
             ).map(|(x,y)| (x.unwrap(), y.unwrap()
