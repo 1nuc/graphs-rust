@@ -5,45 +5,41 @@ use petgraph::{prelude::*, Graph};
 use petgraph::visit::{Bfs, Dfs, VisitMap};
 use bma_benchmark::benchmark;
 
-trait AlgoMethods{
+pub trait AlgoMethods{
     fn initialize_graphs() -> Self;
     fn bfs_algo(&self, src_node: NodeIndex, goal_node: NodeIndex);
     fn dfs_algo(&self, src_node: NodeIndex, goal_node: NodeIndex);
     fn bidirectional_search(&self, src_node: NodeIndex, goal_node: NodeIndex);
     fn benchmark_algos_version2(); 
-    fn run_bfs();
-    fn run_dfs();
-    fn run_bidirectional();
+    fn run_bfs(&self);
+    fn run_dfs(&self);
+    fn run_bidirectional(&self);
 }
 #[derive(Clone)]
-struct Data{
-    data: Vec<(i64, i64)>,
-    graph: Graph<i64, (), Undirected>,
+pub struct Data{
+   pub data: Vec<(i64, i64)>,
+   pub graph: Graph<i64, (), Undirected>,
 }
 impl AlgoMethods for Data{
 
 
-    fn run_bfs(){
-
-        let algo_struct= Self::initialize_graphs();
+    fn run_bfs(&self){
         let src_node: NodeIndex=NodeIndex::new(0);
         let goal_node: NodeIndex=NodeIndex::new(900);
-        algo_struct.bfs_algo(src_node, goal_node);
+        self.bfs_algo(src_node, goal_node);
     }
-    fn run_dfs(){
+    fn run_dfs(&self){
 
-        let algo_struct= Self::initialize_graphs();
         let src_node: NodeIndex=NodeIndex::new(0);
         let goal_node: NodeIndex=NodeIndex::new(900);
-        algo_struct.dfs_algo(src_node, goal_node);
+        self.dfs_algo(src_node, goal_node);
     }
 
-    fn run_bidirectional(){
+    fn run_bidirectional(&self){
 
-        let algo_struct= Self::initialize_graphs();
         let src_node: NodeIndex=NodeIndex::new(0);
         let goal_node: NodeIndex=NodeIndex::new(900);
-        algo_struct.bidirectional_search(src_node, goal_node);
+        self.bidirectional_search(src_node, goal_node);
 
     }
     
