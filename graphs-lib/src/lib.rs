@@ -107,7 +107,7 @@ impl AlgoMethods for Data{
         while let Some(node)= bfs.next(&graph){
             // println!("Visiting Node {:?}", graph[node]);
             if graph[node]==graph[goal_node]{
-                println!("Intened Node Found {:?}", graph[node]);
+                println!("Intended Node Found {:?}", graph[node]);
                 break;
             }
         }
@@ -120,7 +120,7 @@ impl AlgoMethods for Data{
         while let Some(node)= dfs.next(&graph){
             // println!("Visiting Node {:?}", graph[node]);
             if graph[node]==graph[goal_node]{
-                println!("Intened Node Found {:?}", graph[node]);
+                println!("Intended Node Found {:?}", graph[node]);
                 break;
             }
         }
